@@ -540,30 +540,6 @@ add_library(
 
 target_link_libraries(ssl crypto)
 
-add_executable(
-  bssl
-
-  src/tool/args.cc
-  src/tool/ciphers.cc
-  src/tool/client.cc
-  src/tool/const.cc
-  src/tool/digest.cc
-  src/tool/fd.cc
-  src/tool/file.cc
-  src/tool/generate_ech.cc
-  src/tool/generate_ed25519.cc
-  src/tool/genrsa.cc
-  src/tool/pkcs12.cc
-  src/tool/rand.cc
-  src/tool/server.cc
-  src/tool/sign.cc
-  src/tool/speed.cc
-  src/tool/tool.cc
-  src/tool/transport_common.cc
-)
-
-target_link_libraries(bssl ssl crypto)
-
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
   find_package(Threads REQUIRED)
   target_link_libraries(crypto Threads::Threads)
