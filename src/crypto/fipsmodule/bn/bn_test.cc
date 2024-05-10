@@ -884,9 +884,7 @@ static void TestNotModSquare(BIGNUMFileTest *t, BN_CTX *ctx) {
   EXPECT_FALSE(BN_mod_sqrt(ret.get(), not_mod_square.get(), p.get(), ctx))
       << "BN_mod_sqrt unexpectedly succeeded.";
 
-  uint32_t err = ERR_peek_error();
-  EXPECT_EQ(ERR_LIB_BN, ERR_GET_LIB(err));
-  EXPECT_EQ(BN_R_NOT_A_SQUARE, ERR_GET_REASON(err));
+  EXPECT_TRUE(ErrorEquals(ERR_peek_error(), ERR_LIB_BN, BN_R_NOT_A_SQUARE));
   ERR_clear_error();
 }
 
@@ -2948,16 +2946,34 @@ TEST_F(BNTest, BNMulMont5ABI) {
     }
     CHECK_ABI(bn_gather5, r.data(), words, table.data(), 13);
 
-    CHECK_ABI(bn_mul_mont_gather5, r.data(), r.data(), table.data(), m->d,
+    if (bn_mulx4x_mont_gather5_capable(words)) {
+      CHECK_ABI(bn_mulx4x_mont_gather5, r.data(), r.data(), table.data(), m->d,
+                mont->n0, words, 13);
+      CHECK_ABI(bn_mulx4x_mont_gather5, r.data(), a.data(), table.data(), m->d,
+                mont->n0, words, 13);
+    }
+    if (bn_mul4x_mont_gather5_capable(words)) {
+      CHECK_ABI(bn_mul4x_mont_gather5, r.data(), r.data(), table.data(), m->d,
+                mont->n0, words, 13);
+      CHECK_ABI(bn_mul4x_mont_gather5, r.data(), a.data(), table.data(), m->d,
+                mont->n0, words, 13);
+    }
+    CHECK_ABI(bn_mul_mont_gather5_nohw, r.data(), r.data(), table.data(), m->d,
               mont->n0, words, 13);
-    CHECK_ABI(bn_mul_mont_gather5, r.data(), a.data(), table.data(), m->d,
+    CHECK_ABI(bn_mul_mont_gather5_nohw, r.data(), a.data(), table.data(), m->d,
               mont->n0, words, 13);
 
-    if (words % 8 == 0) {
-      CHECK_ABI(bn_power5, r.data(), r.data(), table.data(), m->d, mont->n0,
+    if (bn_powerx5_capable(words)) {
+      CHECK_ABI(bn_powerx5, r.data(), r.data(), table.data(), m->d, mont->n0,
                 words, 13);
-      CHECK_ABI(bn_power5, r.data(), a.data(), table.data(), m->d, mont->n0,
+      CHECK_ABI(bn_powerx5, r.data(), a.data(), table.data(), m->d, mont->n0,
                 words, 13);
+    }
+    if (bn_power5_capable(words)) {
+      CHECK_ABI(bn_power5_nohw, r.data(), r.data(), table.data(), m->d,
+                mont->n0, words, 13);
+      CHECK_ABI(bn_power5_nohw, r.data(), a.data(), table.data(), m->d,
+                mont->n0, words, 13);
     }
   }
 }
